@@ -1,0 +1,142 @@
+﻿@page "/"
+
+<PageTitle>Concatenated Word Fixer</PageTitle>
+
+<h4>Fix your concatenated mishaps!</h4>
+
+<div class="row">
+    <div class="col-8">
+        <b>Output Text:</b> @OutputString
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-8">
+        <input type="text" value="@InputString" @onchange="((cea) => {InputString = cea.Value.ToString(); ResetValues();})" />
+    </div>
+</div>
+
+<div class="row mt-2">
+    <p><i>@ErrorMsg</i></p>
+</div>
+
+@foreach (var word in KnownWords)
+{
+    <div class="row mt-2">
+        <div class="col-4">
+            <input type="text" value="@word" @onchange="((cea) => {CheckWord(word, cea.Value.ToString()); OutputString = FixStringData(InputString, KnownWords); }) " />
+        </div>
+        <div class="col-2">
+            <button @onclick="() => { RemoveWord(word); OutputString = FixStringData(InputString, KnownWords); }" class="btn btn-danger">Remove</button>
+        </div>
+    </div>
+}
+
+<div class="mt-2">
+    <button @onclick="AddWord" class="btn btn-primary">Add Known Word</button>
+    <button @onclick="ResetValues" class="btn btn-primary">Start Over</button>
+</div>
+
+
+@code {
+
+    public string InputString { get; set; } = "thisisatestinput";
+    public string OutputString { get; set; }
+    public List<string> KnownWords { get; set; } = new();
+    public int WordCount => KnownWords.Count;
+
+    public string ErrorMsg { get; set; }
+
+    protected override void OnInitialized()
+    {
+        OutputString = FixStringData(InputString, KnownWords);
+        KnownWords.Add(new(string.Empty));
+    }
+
+    public string FixStringData(string sample, List<string> knownWords)
+    {
+        try
+        {
+            sample = sample.ToUpper();
+
+            // Input String
+            if (string.IsNullOrWhiteSpace(sample)) return sample;
+
+            // Word Array
+            if (!knownWords.Any()) return sample;
+
+            // Loop through word array and replace
+            for (int i = 0; i < knownWords.Count; i++)
+            {
+                // Word
+                // Converted To Upper for replace to find match
+                var word = knownWords[i].ToUpper();
+                if (string.IsNullOrEmpty(word)) return sample;
+
+                sample = sample.Replace(word, $" {word.ToLower()} ");
+            }
+
+            return sample;
+        }
+        catch (Exception ex)
+        {
+            // log ex
+            throw;
+        }
+    }
+
+    public void CheckWord(string oldWord, string newWord)
+    {
+        // Add to list of known words only if:
+        // 1.) Input String contains that word
+        // 2.) Known words does not already contain that word
+        if (InputString.Trim().ToUpper().Contains(newWord.Trim().ToUpper()) && !KnownWords.Contains(newWord))
+        {
+            int index = KnownWords.IndexOf(oldWord);
+            if (index == -1) return;
+
+            KnownWords.RemoveAt(index);
+            KnownWords.Insert(index, newWord);
+
+            ErrorMsg = string.Empty;
+        }
+        else
+        {
+            ErrorMsg = $"The word '{newWord}' is not found in the sample text. Please try again.";
+        }
+
+        StateHasChanged();
+    }
+
+    public void AddWord()
+    {
+        KnownWords.Add(new(string.Empty));
+    }
+
+    public void RemoveWord(string inputWord)
+    {
+        try
+        {
+            var isRemoved = KnownWords.Remove(inputWord);
+
+            if (!isRemoved)
+            {
+                ErrorMsg = $"Issue removing the word {inputWord}. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            // log ex
+        }
+    }
+
+    public void ResetValues()
+    {
+        KnownWords = new();
+        KnownWords.Add(new(string.Empty));
+        OutputString = FixStringData(InputString, KnownWords);
+
+        ErrorMsg = string.Empty;
+        StateHasChanged();
+    }
+}
