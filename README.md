@@ -1,6 +1,6 @@
 # ConcatMishapFixer
 
-Fixes troublesome text<br/>
+<b>Solution exists in index.razor under the Pages folder.</b>
 
 Given a concatenated string and a list of "known" words, fix the input string by separating the known words and capitalizing the unknown words.
 
@@ -12,4 +12,4 @@ The output text displays the fixed text. <br/>
 An error message will pop up if you try to add a known word that doesn't exist in the input field. <br/>
 ![example1](https://user-images.githubusercontent.com/27499574/216706910-af0a0d1a-f7a3-4820-b591-e54744b6778a.png) 
 
-Solution exists in index.razor under the Pages folder.
+
